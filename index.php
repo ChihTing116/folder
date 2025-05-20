@@ -1,6 +1,6 @@
 
 <?php require_once 'db.php'; 
-$keyword=isset($_GET['keyword'])? $_GET['keyword']:"";
+$keyword=isset($_POST['keyword'])? $_POST['keyword']:"";
 if(!empty($keyword)){
  $sql = "SELECT * FROM messages 
             WHERE name LIKE ? OR message LIKE ? 
@@ -32,7 +32,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
  <h1>搜尋留言</h1>
-     <form method="GET">
+     <form method="POST">
        <input type="text" name="keyword" placeholder="輸入關鍵字" value="<?= htmlspecialchars($keyword) ?>">
         <button type="submit">搜尋</button>
          <?php if(!empty($keyword)): ?>
