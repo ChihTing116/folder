@@ -3,10 +3,11 @@
 $keyword=isset($_GET['keyword'])? $_GET['keyword']:"";
 if(!empty($keyword)){
  $sql = "SELECT * FROM messages 
-            WHERE name LIKE '%$keyword%' OR message LIKE '%$keyword%' 
+            WHERE name LIKE ? OR message LIKE ? 
             ORDER BY created_at DESC";
       $stmt=$pdo->prepare($sql);
-      $stmt->execute(["keyword"=>"%keyword%"]);
+      $stmt->execute(["%$keyword%", "%$keyword%"]);
+
         
 }else{
   $sql="SELECT * FROM messages ORDER BY created_at DESC";
@@ -32,7 +33,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
  <h1>搜尋留言</h1>
      <form method="GET">
-        <input type="text" name="keyword" placeholder="輸入關鍵字" >
+       <input type="text" name="keyword" placeholder="輸入關鍵字" value="<?= htmlspecialchars($keyword) ?>">
         <button type="submit">搜尋</button>
          <?php if(!empty($keyword)): ?>
     <a href="index.php">清除搜尋</a>
