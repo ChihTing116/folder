@@ -1,5 +1,6 @@
 
 <?php require_once 'db.php'; 
+
 $keyword=isset($_POST['keyword'])? $_POST['keyword']:"";
 if(!empty($keyword)){
  $sql = "SELECT * FROM messages 
@@ -40,6 +41,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
   <?php endif; ?>
 </form>
  
+
  
   <hr>
 
@@ -60,13 +62,21 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <?php if (count($results)>0): ?>
       <?php foreach($results as $row): ?>
         <p><strong><?= htmlspecialchars($row['name']) ?>：</strong><?= nl2br(htmlspecialchars($row['message'])) ?></p>
-        <small>時間：<?= $row['created_at'] ?></small><br>
-        <a href="edit.php?id=<?= $row['id'] ?>">編輯留言</a> |
-        <a href="delete.php?id=<?= $row['id'] ?>" onclick="return confirm('確定要刪除嗎？')">刪除留言</a>
-        <hr>
-      <?php endforeach; ?>
-    <?php else: ?>
-      <p>目前尚無留言</p>
+        <small>時間：
+        <?= htmlspecialchars(!empty($row['updated_at']) ? $row['updated_at'] : $row['created_at']) ?>
+      </small><br>
+        <a href="edit.php?id=<?= $row['id'] ?>">編輯留言</a>
+         |
+        <form action="delete.php" method="post" style="display:inline;" onsubmit="return confirm('確定要刪除嗎？')">
+      <input type="hidden" name="id" value="<?= $row['id'] ?>">
+      <button type="submit">刪除留言</button>
+    </form>
+
+    <hr>
+  <?php endforeach; ?>
+<?php else: ?>
+  <p>目前尚無留言</p>
+
     <?php endif; ?>
   </div>
 

@@ -1,4 +1,5 @@
 <?php
+
 require_once 'db.php'; // 確保裡面是 $pdo = new PDO(...);
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {

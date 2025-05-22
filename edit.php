@@ -1,4 +1,5 @@
 <?php require_once 'db.php'; 
+date_default_timezone_set("Asia/Taipei");
 
 // 確認是否有接收到 id
 if (!isset($_GET['id'])) {
@@ -13,12 +14,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $message = trim($_POST["message"]);
 
     if (!empty($name) && !empty($message)) {
-        $stmt = $pdo->prepare("UPDATE messages SET name = :name, message = :message WHERE id = :id");
-        $stmt->execute([
+        $stmt = $pdo->prepare("UPDATE messages SET name = :name, message = :message , updated_at =:updated_at WHERE id = :id");
+        $success=$stmt->execute([
             ':name' => $name,
             ':message' => $message,
+            ':updated_at'=>date("Y-m-d H:i:s"),
             ':id' => $id
-        ]);
+           
+]);
+if (!$success) {
+    print_r($stmt->errorInfo());
+    die("更新失敗");
+}
+      
         header("Location: index.php");
         exit;
     } else {
