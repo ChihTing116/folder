@@ -30,11 +30,11 @@ if (!$success) {
         header("Location: index.php");
         exit;
     } else {
-        $error = "姓名和留言不能空白";
+        $error = "編輯不成功:姓名和留言不能空白";
     }
 }
 
-// 查詢原始留言資料
+// 查詢原始留言資料 保留內容
 $stmt = $pdo->prepare("SELECT * FROM messages WHERE id = :id");
 $stmt->execute([':id' => $id]);
 $messageData = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -52,12 +52,12 @@ if (!$messageData) {
 </head>
 <body>
     <h1>編輯留言</h1>
-
     <?php if (!empty($error)): ?>
         <p style="color:red;"><?= $error ?></p>
     <?php endif; ?>
-
+    
     <form method="post" action="">
+        
         <label>名字：</label><br>
         <input type="text" name="name" value="<?= htmlspecialchars($messageData['name']) ?>" required><br><br>
 
@@ -66,6 +66,7 @@ if (!$messageData) {
 
         <button type="submit">更新留言</button>
         <a href="index.php">取消</a>
+        
     </form>
 </body>
 </html>

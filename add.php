@@ -6,15 +6,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $name = trim($_POST["name"]);
     $message = trim($_POST["message"]);
 
-    if (!empty($name) && !empty($message)) {
-        $stmt = $pdo->prepare("INSERT INTO messages (name, message) VALUES (:name, :message)");
-        $stmt->execute([
-            ':name' => $name,
-            ':message' => $message
-        ]);
+    if (empty($name) || empty($message)){
+        header("Location:index.php?error=empty");
+        exit();
     }
+    $stmt = $pdo->prepare("INSERT INTO messages (name, message) VALUES (:name, :message)");
+    $stmt->execute([
+        ':name' => $name,
+        ':message' => $message
+    ]);
+     header("Location: index.php");
+    exit();
+       
 }
-
-header("Location: index.php");
-exit;
-
+?>

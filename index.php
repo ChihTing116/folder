@@ -1,7 +1,7 @@
 
 <?php require_once 'db.php'; 
 
-$keyword=isset($_POST['keyword'])? $_POST['keyword']:"";
+$keyword=isset($_POST['keyword'])?  $_POST['keyword']:"";
 if(!empty($keyword)){
  $sql = "SELECT * FROM messages 
             WHERE name LIKE ? OR message LIKE ? 
@@ -18,6 +18,10 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
 ?>
+
+<?php if (isset($_GET["error"]) && $_GET["error"] == "empty"): ?>
+    <p style="color:red;">請填寫姓名與留言</p>
+<?php endif; ?>
 
 
 
