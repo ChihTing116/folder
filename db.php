@@ -3,7 +3,7 @@
 $host = "localhost";
 $dbname = "board";
 $user = "root";
-$pass = "";
+$pass = "actsnotion2020";
 
 
 try {

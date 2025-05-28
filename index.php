@@ -1,13 +1,15 @@
 
 <?php require_once 'db.php'; 
 
-$keyword=isset($_POST['keyword'])?  $_POST['keyword']:"";
+$keyword=isset($_GET['keyword'])?  $_GET['keyword']:"";
 if(!empty($keyword)){
  $sql = "SELECT * FROM messages 
-            WHERE name LIKE ? OR message LIKE ? 
+            WHERE name LIKE :keyword OR message LIKE :keyword 
             ORDER BY created_at DESC";
       $stmt=$pdo->prepare($sql);
-      $stmt->execute(["%$keyword%", "%$keyword%"]);
+      $stmt->execute([
+        ":keyword"=>"%$keyword%"
+      ]);
 
         
 }else{
@@ -21,6 +23,9 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <?php if (isset($_GET["error"]) && $_GET["error"] == "empty"): ?>
     <p style="color:red;">請填寫姓名與留言</p>
+    <?php endif; ?>
+    <?php if (isset($_GET["error"])&&$_GET['error']=="toolong"):?>
+    <p style="color:red;">字數限制:255 留言數過長</p>
 <?php endif; ?>
 
 
@@ -37,7 +42,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
  <h1>搜尋留言</h1>
-     <form method="POST">
+     <form method="GET" action="">
        <input type="text" name="keyword" placeholder="輸入關鍵字" value="<?= htmlspecialchars($keyword) ?>">
         <button type="submit">搜尋</button>
          <?php if(!empty($keyword)): ?>
@@ -55,7 +60,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <input type="text" name="name" required><br><br>
 
     <label>留言內容：</label><br>
-    <textarea name="message" rows="5" cols="40" required></textarea><br><br>
+    <textarea name="message" rows="5" cols="40"  maxlength="255" required></textarea><br><br>
 
     <button type="submit">送出留言</button> 
   </form>
