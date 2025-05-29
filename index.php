@@ -1,13 +1,14 @@
-
 <?php require_once 'db.php'; 
 
-$keyword=isset($_GET['keyword'])?  $_GET['keyword']:"";
-if(!empty($keyword)){
+ $keyword = isset($_GET["keyword"]) ? trim($_GET["keyword"]) : "";
+
+ if (strlen($keyword)>0) {
  $sql = "SELECT * FROM messages 
             WHERE name LIKE :keyword OR message LIKE :keyword 
             ORDER BY created_at DESC";
       $stmt=$pdo->prepare($sql);
       $stmt->execute([
+
         ":keyword"=>"%$keyword%"
       ]);
 
@@ -33,19 +34,21 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
   <title>留言板</title>
 </head>
 <body>
-
+  
+<div style="max-width: 700px; margin: 0 auto;">
+    
 
  <h1>搜尋留言</h1>
      <form method="GET" action="">
-       <input type="text" name="keyword" placeholder="輸入關鍵字" value="<?= htmlspecialchars($keyword) ?>">
+       <input type="text" name="keyword" placeholder="輸入關鍵字" value="<?= isset($_GET["keyword"])?htmlspecialchars($keyword):"" ?>">
         <button type="submit">搜尋</button>
-         <?php if(!empty($keyword)): ?>
+         <?php if (strlen($keyword) > 0): ?>
     <a href="index.php">清除搜尋</a>
   <?php endif; ?>
 </form>
@@ -88,7 +91,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <?php endif; ?>
   </div>
-
+  </div>
 
 </body>
 </html>

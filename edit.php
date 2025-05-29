@@ -10,26 +10,20 @@ $error = "";
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
      
-    if (!isset($_POST["id"])) {
+    if (!isset($_POST["id"]) || !ctype_digit((string)$_POST["id"])){
         die("錯誤：沒有指定要更新的留言");
     }
     $id = $_POST["id"];
-
-    if (!ctype_digit($id)) {
-        die("錯誤：沒有指定或無效的 ID");
-    }
-    
-    $id = intval($id);
-
-    if ($id > 2147483647) {
-        die("錯誤:ID 超出允許範圍");
+    $id = (int)$_POST["id"];
+    if ($id < 0 || $id > 2147483647) {
+        die("錯誤：ID 超出允許範圍");
     }
 
     
     $name = trim($_POST["name"]);
     $message = trim($_POST["message"]);
 
-    if (!empty($name) && !empty($message)) {
+    if (strlen($name) > 0 && strlen($message) > 0) {
         $stmt = $pdo->prepare("UPDATE messages SET name = :name, message = :message , updated_at =:updated_at WHERE id = :id");
         $success=$stmt->execute([
             ':name' => $name,
@@ -51,19 +45,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
 
-// if(!empty($id)||isset($_GET["id"]))
+
 
 }else {
-    // GET 請求，取得 id(進入編輯前檢查處理)
-    if (isset($_GET["id"])) {
-        $id = intval($_GET["id"]);
-        if ($id === 0) {
-            die("錯誤：無效的留言 ID");//輸入字串或0的時候
-        }
-    }else {
-        die("錯誤：沒有指定要編輯的留言");//網址中完全沒有帶 id 參數
+
+if (!isset($_GET["id"]) || !ctype_digit((string)$_GET["id"])) {
+    die("錯誤：沒有指定或無效的 ID");
     }
-}
+    $id = (int)$_GET["id"];
+    if ($id < 0 || $id > 2147483647) {
+        die("錯誤：ID 超出允許範圍");
+    }
+ }
 
 // 查詢原始留言資料 保留內容
 $stmt = $pdo->prepare("SELECT * FROM messages WHERE id = :id");
@@ -82,6 +75,7 @@ if (!$messageData) {
     <title>編輯留言</title>
 </head>
 <body>
+    <div style="max-width: 700px; margin: 0 auto;">
     <h1>編輯留言</h1>
     <?php if (!empty($error)): ?>
         <p style="color:red;"><?= $error ?></p>
@@ -101,5 +95,6 @@ if (!$messageData) {
         <a href="index.php">取消</a>
         
     </form>
+    </div>
 </body>
 </html>
