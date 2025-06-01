@@ -1,17 +1,29 @@
-<?php require_once 'db.php'; 
+<?php
+require_once 'db.php';
+require_once 'functions.php';
+require_once 'header.php';
 
-// 確認是否有接收到 id
-if (!isset($_POST['id'])) {
-    die("錯誤：沒有指定要刪除的留言");
+$pdo = getPDO();
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $id = $_POST['id'];
+
+    if (!ctype_digit($id)) {
+        die("錯誤：無效的 ID 格式");
+    }
+
+    $message = getMessageById($pdo, $id);
+
+    if (!$message) {
+        die("錯誤：查無此筆留言，無法刪除");
+    }
+
+    if (deleteMessage($pdo, $id)) {
+        header("Location: index.php");
+        exit();
+    } else {
+        die("刪除留言失敗");
+    }
 }
-
-$id = intval($_POST['id']); // 防止 SQL 注入
-
-// 執行刪除
-$stmt = $pdo->prepare("DELETE FROM messages WHERE id = ?");
-$stmt->execute([$id]);
-
-// 回到首頁
-header("Location: index.php");
-exit;
+require_once('footer.php');
 ?>

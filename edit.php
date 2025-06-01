@@ -1,72 +1,58 @@
-<?php require_once 'db.php'; 
-date_default_timezone_set("Asia/Taipei");
+<?php
+require_once 'db.php';
+require_once 'functions.php';
+require_once 'header.php';
 
-// 確認是否有接收到 id
-if (!isset($_GET['id'])) {
-    die("錯誤：沒有指定要編輯的留言");
-}
+$pdo = getPDO();
+$error = "";
 
-$id = intval($_GET['id']); // 將 id 轉為整數以防 SQL 注入
-
-// 如果表單送出，進行更新
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $id = $_POST["id"];
     $name = trim($_POST["name"]);
     $message = trim($_POST["message"]);
 
-    if (!empty($name) && !empty($message)) {
-        $stmt = $pdo->prepare("UPDATE messages SET name = :name, message = :message , updated_at =:updated_at WHERE id = :id");
-        $success=$stmt->execute([
-            ':name' => $name,
-            ':message' => $message,
-            ':updated_at'=>date("Y-m-d H:i:s"),
-            ':id' => $id
-           
-]);
-if (!$success) {
-    print_r($stmt->errorInfo());
-    die("更新失敗");
-}
-      
-        header("Location: index.php");
-        exit;
+    if (!ctype_digit($id) || $name === '' || $message === '') {
+        $error = "編輯不成功: 姓名和留言不能空白";
     } else {
-        $error = "編輯不成功:姓名和留言不能空白";
+        if (updateMessage($pdo, $id, $name, $message)) {
+            header("Location: index.php");
+            exit();
+        } else {
+            $error = "更新失敗";
+        }
     }
-}
+} else {
+    if (!isset($_GET["id"]) || !ctype_digit($_GET["id"])) {
+        die("錯誤：沒有指定或無效的 ID");
+    }
+    $id = $_GET["id"];
+    $messageData = getMessageById($pdo, $id);
 
-// 查詢原始留言資料 保留內容
-$stmt = $pdo->prepare("SELECT * FROM messages WHERE id = :id");
-$stmt->execute([':id' => $id]);
-$messageData = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if (!$messageData) {
-    die("找不到該留言");
+    if (!$messageData) {
+        die("找不到該留言");
+    }
 }
 ?>
 
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>編輯留言</title>
-</head>
-<body>
-    <h1>編輯留言</h1>
-    <?php if (!empty($error)): ?>
-        <p style="color:red;"><?= $error ?></p>
-    <?php endif; ?>
-    
-    <form method="post" action="">
-        
-        <label>名字：</label><br>
-        <input type="text" name="name" value="<?= htmlspecialchars($messageData['name']) ?>" required><br><br>
+<h2 class="mb-4">編輯留言</h2>
 
-        <label>留言內容：</label><br>
-        <textarea name="message" rows="5" cols="40" required><?= htmlspecialchars($messageData['message']) ?></textarea><br><br>
+<?php if ($error): ?>
+  <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
+<?php endif; ?>
 
-        <button type="submit">更新留言</button>
-        <a href="index.php">取消</a>
-        
-    </form>
-</body>
-</html>
+<form method="POST" action="edit.php">
+  <input type="hidden" name="id" value="<?= $messageData['id'] ?>">
+  <div class="mb-3">
+    <label class="form-label">姓名</label>
+    <input type="text" name="name" class="form-control" value="<?= htmlspecialchars($messageData['name']) ?>" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">留言內容</label>
+    <textarea name="message" class="form-control" rows="4" required><?= htmlspecialchars($messageData['message']) ?></textarea>
+  </div>
+  <button type="submit" class="btn btn-primary">更新留言</button>
+</form>
+
+<?php
+require_once('footer.php');
+?>

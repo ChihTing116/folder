@@ -1,89 +1,58 @@
+<?php
+require_once 'db.php';
+require_once 'functions.php';
+require_once 'header.php';
 
-<?php require_once 'db.php'; 
+$pdo = getPDO();
+$keyword = isset($_GET["keyword"]) ? trim($_GET["keyword"]) : "";
 
-$keyword=isset($_POST['keyword'])?  $_POST['keyword']:"";
-if(!empty($keyword)){
- $sql = "SELECT * FROM messages 
-            WHERE name LIKE ? OR message LIKE ? 
-            ORDER BY created_at DESC";
-      $stmt=$pdo->prepare($sql);
-      $stmt->execute(["%$keyword%", "%$keyword%"]);
-
-        
-}else{
-  $sql="SELECT * FROM messages ORDER BY created_at DESC";
-  $stmt=$pdo->query($sql);
+if ($keyword !== "") {
+    $messages = searchMessages($pdo, $keyword);
+} else {
+    $messages = getAllMessages($pdo);
 }
-$results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 
 ?>
-
-<?php if (isset($_GET["error"]) && $_GET["error"] == "empty"): ?>
-    <p style="color:red;">請填寫姓名與留言</p>
+<?php if (isset($_GET['error'])): ?>
+  <div class="alert alert-danger">
+    <?php if ($_GET['error'] === 'empty') echo '姓名與留言皆為必填。'; ?>
+    <?php if ($_GET['error'] === 'toolong') echo '留言長度不能超過 255 字。'; ?>
+  </div>
 <?php endif; ?>
 
-
-
-
-
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>留言板</title>
-</head>
-<body>
-
-
- <h1>搜尋留言</h1>
-     <form method="POST">
-       <input type="text" name="keyword" placeholder="輸入關鍵字" value="<?= htmlspecialchars($keyword) ?>">
-        <button type="submit">搜尋</button>
-         <?php if(!empty($keyword)): ?>
-    <a href="index.php">清除搜尋</a>
-  <?php endif; ?>
-</form>
- 
-
- 
-  <hr>
-
-  <h2>新增留言</h2>
-  <form action="add.php" method="POST">
-    <label>名字：</label><br>
-    <input type="text" name="name" required><br><br>
-
-    <label>留言內容：</label><br>
-    <textarea name="message" rows="5" cols="40" required></textarea><br><br>
-
-    <button type="submit">送出留言</button> 
-  </form>
-
-  <hr>
-  <h3>留言區：</h3>
-  <div>
-    <?php if (count($results)>0): ?>
-      <?php foreach($results as $row): ?>
-        <p><strong><?= htmlspecialchars($row['name']) ?>：</strong><?= nl2br(htmlspecialchars($row['message'])) ?></p>
-        <small>時間：
-        <?= htmlspecialchars(!empty($row['updated_at']) ? $row['updated_at'] : $row['created_at']) ?>
-      </small><br>
-        <a href="edit.php?id=<?= $row['id'] ?>">編輯留言</a>
-         |
-        <form action="delete.php" method="post" style="display:inline;" onsubmit="return confirm('確定要刪除嗎？')">
-      <input type="hidden" name="id" value="<?= $row['id'] ?>">
-      <button type="submit">刪除留言</button>
-    </form>
-
-    <hr>
-  <?php endforeach; ?>
-<?php else: ?>
-  <p>目前尚無留言</p>
-
-    <?php endif; ?>
+<form class="mb-4" method="GET" action="index.php">
+  <div class="input-group">
+    <input type="text" class="form-control" name="keyword" placeholder="搜尋留言…" value="<?= htmlspecialchars($keyword) ?>">
+    <button class="btn btn-outline-secondary" type="submit">搜尋</button>
   </div>
+</form>
 
+<?php if (count($messages) === 0): ?>
+  <p class="text-muted">目前沒有留言。</p>
+<?php else: ?>
+  <?php foreach ($messages as $msg): ?>
+    <div class="card mb-3">
+      <div class="card-body">
+        <h5 class="card-title"><?= htmlspecialchars($msg['name']) ?></h5>
+        <p class="card-text"><?= nl2br(htmlspecialchars($msg['message'])) ?></p>
+        <p class="card-text">
+          <small class="text-muted">
+            發佈時間：<?= $msg['created_at'] ?><br>
+            <?= $msg['updated_at'] ? "更新時間：{$msg['updated_at']}" : "" ?>
+          </small>
+        </p>
+        <div class="d-flex gap-2">
+          <a href="edit.php?id=<?= $msg['id'] ?>" class="btn btn-sm btn-primary">編輯</a>
+          <form method="POST" action="delete.php" onsubmit="return confirm('確定要刪除這則留言嗎？')">
+            <input type="hidden" name="id" value="<?= $msg['id'] ?>">
+            <button type="submit" class="btn btn-sm btn-danger">刪除</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  <?php endforeach; ?>
+<?php endif; ?>
 
-</body>
-</html>
+<?php
+require_once('footer.php');
+?>

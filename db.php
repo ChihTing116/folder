@@ -1,17 +1,17 @@
 
 <?php
-$host = "localhost";
-$dbname = "board";
-$user = "root";
-$pass = "";
+function getPDO() {
+    $host = "localhost";
+    $dbname = "board";
+    $user = "root";
+    $pass = 'root';
 
-
-try {
-    // 建立 PDO 連線
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $user, $pass);
-    // 設定連線後錯誤模式為拋出例外
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    echo("連線失敗：" . $e->getMessage());
+    try {
+        $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $user, $pass);
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        return $pdo;
+    } catch (PDOException $e) {
+        die("連線失敗：" . $e->getMessage());
+    }
 }
 ?>
